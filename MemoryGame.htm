@@ -16,6 +16,7 @@
 		let timer;
 		let contador = 0;
 		let jugando = false;
+		let terminado = false;
 
 		function iniciar() {
 			// tamaño disponible: el menor entre el ancho y el alto de la pantalla
@@ -47,17 +48,37 @@
 			boton.style.color = 'black';
 			boton.style.fontFamily = 'Arial, sans-serif';
 
-			let puntos = document.getElementById('puntos');
-			puntos.style.width = ancho + 'px';
-			puntos.style.fontSize = (caja * 0.3) + 'px';
-			puntos.style.marginBottom = '20px';
-			puntos.style.fontWeight = 'bold';
-			puntos.style.textAlign = 'right'; 
-			document.body.appendChild(puntos);
+			//Points
+			let points = document.getElementById('points');
+			points.style.fontSize = (caja * 0.3) + 'px';
+			points.style.margin = '0px';
+			points.style.fontWeight = 'bold';
+			
+			//Reload Button
+			let reload = document.getElementById('reload');
+			reload.style.width = (caja * 0.5) + 'px';
+			reload.style.height = (caja * 0.5) + 'px';
+			reload.style.backgroundColor = 'pink';
+			reload.style.backgroundImage = 'url(img/reload.png)';
+			reload.style.backgroundSize = '70%';
+			reload.style.backgroundPosition = 'center';
+			reload.style.backgroundRepeat = 'no-repeat';
+			reload.style.border = 'none';
+			reload.style.borderRadius = '50%';
+
+			// fila de arriba: reload a la izquierda, puntos a la derecha
+			let filaPuntos = crearNodo('div', '', 'filaPuntos');
+			filaPuntos.style.display = 'flex';
+			filaPuntos.style.justifyContent = 'space-between';
+			filaPuntos.style.alignItems = 'center';
+			filaPuntos.style.width = ancho + 'px';
+			filaPuntos.style.marginBottom = '20px';
+			filaPuntos.appendChild(reload); // left
+			filaPuntos.appendChild(points); // right
 
 			//Tablero
 			let tablero = crearNodo('div', '', 'tablero');
-			tablero.style.width = ancho + 'px'; 
+			tablero.style.width = ancho + 'px';
 			tablero.style.overflow = 'hidden';
 
 			//Barra debajo de Tablerp
@@ -83,12 +104,12 @@
 				'img/mick-de-paola-hiVfcLGGYtE-unsplash.jpg',
 				'img/olga-drach-mCufwx_aycM-unsplash.jpg',
 				'img/pawel-czerwinski-jtes8PJxxj8-unsplash.jpg']; // colores repetidos para las parejas 
-				
-				for (let i = 0; i < fotos.length; i++) {
+
+			for (let i = 0; i < fotos.length; i++) {
 				let img = new Image();
 				img.src = fotos[i]; // el navegador la descarga ahora y la guarda
 			}
-			
+
 			let imagenes = fotos.concat(fotos); // cada foto dos veces
 
 			imagenes.sort(function () { //mezcla la lista para que las parejas queden en sitios al azar
@@ -132,6 +153,10 @@
 			return ele; // retorna la referencia
 		}
 		function startCountdown() {
+			if (terminado) {
+				location.reload();
+				return;
+			}
 			jugando = true;
 			clearInterval(timer);
 			let count = 60;
@@ -144,6 +169,7 @@
 				if (count === 0) {
 					clearInterval(timer);
 					jugando = false;
+					terminado = true;
 					myDisplayer("Try again!");
 				}
 			}, 1000);
@@ -182,12 +208,13 @@
 					primero = null;
 					segundo = null;
 					contador++;
-					document.getElementById('puntos').innerHTML = 'Points: ' + contador
+					document.getElementById('points').innerHTML = 'Points: ' + contador
 				}
 			}
 			if (contador == 8) {
 				clearInterval(timer);
 				jugando = false;
+				terminado = true;
 				myDisplayer("Congratulations!");
 			}
 
@@ -202,8 +229,9 @@
 
 <body>
 	<button onclick="startCountdown()">Start Countdown</button>
+	<button onclick="location.reload()" id="reload"></button>
 	<p id="demo"></p>
-	<p id="puntos">Points: 0</p>
+	<p id="points">Points: 0</p>
 
 </body>
 
