@@ -19,7 +19,7 @@
 
 		function iniciar() {
 			// tamaño disponible: el menor entre el ancho y el alto de la pantalla
-			let espacio = Math.min(window.innerWidth, window.innerHeight * 0.65);
+			let espacio = Math.min(window.innerWidth - 24, window.innerHeight * 0.65);
 			let caja = Math.floor(espacio / 4) - 16; // cada caja ocupa caja + 16px (borde, padding y margen)
 			if (caja > 300) caja = 300; // máximo, para que no sea gigante en pantallas grandes
 			let ancho = (caja + 16) * 4; // ancho del tablero
@@ -31,12 +31,13 @@
 			document.body.style.flexDirection = 'column';
 			document.body.style.justifyContent = 'center';
 			document.body.style.alignItems = 'center';
-			document.getElementById('demo').style.fontSize = (caja * 0.3) + 'px';
+			document.body.style.fontFamily = 'Arial, sans-serif';
+			document.getElementById('demo').style.fontSize = (caja * 0.25) + 'px';
 			document.getElementById('demo').style.fontWeight = 'bold';
 
 			//Botón
 			let boton = document.querySelector('button');
-			boton.style.width = (ancho * 0.6) + 'px';
+			boton.style.width = (ancho * 0.45) + 'px';
 			boton.style.height = (caja * 0.4) + 'px';
 			boton.style.fontSize = (caja * 0.2) + 'px';
 			boton.style.fontWeight = 'bold';
@@ -44,6 +45,7 @@
 			boton.style.border = '3px solid pink';
 			boton.style.borderRadius = '30px';
 			boton.style.color = 'black';
+			boton.style.fontFamily = 'Arial, sans-serif';
 
 			let puntos = document.getElementById('puntos');
 			puntos.style.width = ancho + 'px';
@@ -64,7 +66,7 @@
 			barra.style.justifyContent = 'space-between'; // uno a cada lado
 			barra.style.alignItems = 'center';
 			barra.style.width = ancho + 'px';
-			barra.style.marginTop = '40px';
+			barra.style.marginTop = '30px';
 
 			// movemos el botón y el contador a la barra
 			barra.appendChild(document.querySelector('button')); // izquierda
