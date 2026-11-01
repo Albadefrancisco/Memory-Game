@@ -2,88 +2,188 @@
 <html>
 
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<title>JUEGO DE MEMORIA</title>
-<style>
-</style>
-<script>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>JUEGO DE MEMORIA</title>
+	<style>
+	</style>
 
-	const nMenu=64; // numero de opciones del menu
-	let primero = null; // primer cuadrado pulsado, null significa que todavía no hay ninguno pulsado
-	let segundo = null; // segundo cuadrado pulsado
+	<script>
 
-	function iniciar(){
-	let colores = ['red','red','blue','blue','green','green','yellow','yellow',
-	               'orange','orange','purple','purple','black','black','white','white']; // colores repetidos para las parejas 
-	
-				   colores.sort(function(){ //mezcla la lista para que las parejas queden en sitios al azar
-		return Math.random() - 0.5; 
-	}); 
-	let num = 0; //posicion del color que le toca al siguiente cuadrado
+		const nMenu = 64; // numero de opciones del menu
+		let primero = null; // primer cuadrado pulsado, null significa que todavía no hay ninguno pulsado
+		let segundo = null; // segundo cuadrado pulsado
+		let timer;
+		let contador = 0;
 
-for (let fila=1; fila<5; fila++){
-	for (let col=1; col<5; col++){
+		function iniciar() {
+			//centramos todo el body
+			document.body.style.backgroundColor = '#fff0f5';
+			document.body.style.margin = '0';
+			document.body.style.minHeight = '100vh';
+			document.body.style.display = 'flex';
+			document.body.style.flexDirection = 'column';
+			document.body.style.justifyContent = 'center';
+			document.body.style.alignItems = 'center';
+			document.getElementById('demo').style.fontSize = '70px';
+			document.getElementById('demo').style.fontWeight = 'bold';
+
+			//Botón
+			let boton = document.querySelector('button');
+			boton.style.width = '500px';
+			boton.style.height = '100px';
+			boton.style.fontSize = '50px';
+			boton.style.fontWeight = 'bold';
+			boton.style.backgroundColor='white';
+			boton.style.border= '7px solid pink';
+
+			let puntos = document.getElementById('puntos');
+			puntos.style.width = '1264px';
+			puntos.style.fontSize = '70px';
+			puntos.style.marginBottom = '60px';
+			puntos.style.fontWeight = 'bold';
+			puntos.style.textAlign = 'right'; // o 'center' / 'right'
+			document.body.appendChild(puntos);
+
+			//Tablero
+			let tablero = crearNodo('div', '', 'tablero');
+			tablero.style.width = '1264px'; // 4 cajas de 110px
+			tablero.style.overflow = 'hidden'; // para que envuelva las cajas con float
+
+			//Barra debajo de Tablerp
+			let barra = crearNodo('div', '', 'barra');
+			barra.style.width = '1264px'; // mismo ancho que el tablero
+			barra.style.display = 'flex';
+			barra.style.justifyContent = 'space-between'; // uno a cada lado
+			barra.style.alignItems = 'center';
+			barra.style.marginTop = '40px';
+
+			// movemos el botón y el contador a la barra
+			barra.appendChild(document.querySelector('button')); // izquierda
+			let demo = document.getElementById('demo');
+			demo.style.margin = '0px';
+			barra.appendChild(demo); // derecha
+
 		
-		var ele=crearNodo('div','','(fila,col)'); //crea el div y lo añade al body
-		
-		ele.colorOculto = colores[num]; // color secreto de este cuadrado
-		num++;//el siguiente cuadrado usará el siguiente color
+			let fotos = ['img/edge2edge-media-6gvHkTmC3Bo-unsplash.jpg',
+				'img/katriona-mccarthy-l7B7VjYL7pk-unsplash.jpg',
+				'img/katriona-mccarthy-sGYlyg_U92I-unsplash.jpg',
+				'img/klara-kulikova-glyAISndbac-unsplash.jpg',
+				'img/marianne-krohn-HV3XfirsXp8-unsplash.jpg',
+				'img/mick-de-paola-hiVfcLGGYtE-unsplash.jpg',
+				'img/olga-drach-mCufwx_aycM-unsplash.jpg',
+				'img/pawel-czerwinski-jtes8PJxxj8-unsplash.jpg']; // colores repetidos para las parejas 
+			let imagenes = fotos.concat(fotos); // cada foto dos veces
 
-		ele.style.border='1px solid black';
-		ele.style.backgroundColor='pink';
-		ele.style.height='100px';
-		ele.style.width='100px';
-		ele.style.margin='3px';
-		ele.style.padding='2px';
-		ele.style.textAlign='left'; // centrar texto
-		ele.style.float='left'; // cajas en linea
+			imagenes.sort(function () { //mezcla la lista para que las parejas queden en sitios al azar
+				return Math.random() - 0.5;
+			});
+			let num = 0; //posicion del color que le toca al siguiente cuadrado
 
-		if (col == 1) ele.style.clear='left'; //salto linea cada
+			for (let fila = 1; fila < 5; fila++) {
+				for (let col = 1; col < 5; col++) {
 
-		ele.addEventListener('click',clickMenu);
-	}
-}
+					var ele = crearNodo('div', '', '(fila,col)'); //crea el div y lo añade al body
+					tablero.appendChild(ele); // lo mueve del body al tablero
 
-}
+					ele.colorOculto = imagenes[num]; // color secreto de este cuadrado
+					num++;//el siguiente cuadrado usará el siguiente color
 
-function clickMenu(){
-	// Ignorar si ya está descubierto (acertado o ya pulsado)
-	if (this.style.backgroundColor != 'pink') return; // si el cuadrado no es rosa no hacemos nada
+					ele.style.border = '3px solid pink';
+					ele.style.backgroundColor = 'pink';
+					ele.style.borderRadius = '32%'
+					ele.style.height = '300px';
+					ele.style.width = '300px';
+					ele.style.margin = '3px';
+					ele.style.padding = '2px';
+					ele.style.float = 'left'; // cajas en linea
+					ele.style.backgroundSize = 'cover';
+					ele.style.backgroundPosition = 'center';
+					ele.style.backgroundRepeat = 'no-repeat';
 
-	// Tercer click: si había dos descubiertos sin acertar, taparlos
-	if (segundo != null){
-		primero.style.backgroundColor = 'pink';
-		segundo.style.backgroundColor = 'pink';
-		primero = null; //vaciamos para empezar nueva jugada
-		segundo = null;
-	}
+					if (col == 1) ele.style.clear = 'left'; //salto linea cada
 
-	// Descubrir el cuadrado pulsado poniendole su color oculto
-	this.style.backgroundColor = this.colorOculto;
-
-	if (primero == null){
-		primero = this;// es el primero de la jugada, no había nada guardado
-	} else {
-		segundo = this;// ya había uno, este es el segundo
-		if (primero.colorOculto == segundo.colorOculto){ //se quedan destapados
-			primero = null;
-			segundo = null;
+					ele.addEventListener('click', clickMenu);
+				}
+			}
 		}
-	}
-}
-	
-function crearNodo(tipo,inner,id){
-	// crea el nodo, lo pone en el body
-	var ele=document.createElement(tipo);
-	document.body.appendChild(ele); // añadir al body el elemento div por abajo
-	ele.innerHTML=inner; // contenido
-	ele.id=id; // id del nodo
-	return ele; // retorna la referencia
-}
+		function crearNodo(tipo, inner, id) {
+			// crea el nodo, lo pone en el body
+			var ele = document.createElement(tipo);
+			document.body.appendChild(ele); // añadir al body el elemento div por abajo
+			ele.innerHTML = inner; // contenido
+			ele.id = id; // id del nodo
+			return ele; // retorna la referencia
+		}
+		function startCountdown() {
+			clearInterval(timer);
+			let count = 60;
+			myDisplayer(count);
 
-window.onload=iniciar; // inicio de js al terminar la carga de la pagina
-</script>
+			timer = setInterval(function () {
+				count--;
+				myDisplayer(count);
+
+				if (count === 0) {
+					clearInterval(timer);
+					myDisplayer("Try again!");
+				}
+			}, 1000);
+		}
+
+		// Function to display any text
+		function myDisplayer(text) {
+			let demo = document.getElementById("demo");
+			demo.innerHTML = text;
+		}
+
+		function clickMenu() {
+			// Ignorar si ya está descubierto (acertado o ya pulsado)
+			if (this.style.backgroundColor != 'pink') return; // si el cuadrado no es rosa no hacemos nada
+
+			// Tercer click: si había dos descubiertos sin acertar, taparlos
+			if (segundo != null) {
+				primero.style.backgroundColor = 'pink';
+				primero.style.backgroundImage = 'none';
+				segundo.style.backgroundColor = 'pink';
+				segundo.style.backgroundImage = 'none';
+				primero = null; //vaciamos para empezar nueva jugada
+				segundo = null;
+			}
+
+			// Descubrir el cuadrado pulsado poniendole su color oculto
+			this.style.backgroundColor = 'white';
+			this.style.backgroundImage = 'url(' + this.colorOculto + ')';
+
+			if (primero == null) {
+				primero = this;// es el primero de la jugada, no había nada guardado
+			} else {
+				segundo = this;// ya había uno, este es el segundo
+				if (primero.colorOculto == segundo.colorOculto) { //se quedan destapados
+					primero = null;
+					segundo = null;
+					contador++;
+					document.getElementById('puntos').innerHTML = 'Puntos: ' + contador
+				}
+			}
+			if (contador == 8) {
+				clearInterval(timer);
+				myDisplayer("Congratulations!");
+			}
+
+
+
+		}
+
+
+		window.onload = iniciar; // inicio de js al terminar la carga de la pagina
+	</script>
 </head>
+
 <body>
+	<button onclick="startCountdown()">Start Countdown</button>
+	<p id="demo"></p>
+	<p id="puntos">Points: 0</p>
+
 </body>
+
 </html>
