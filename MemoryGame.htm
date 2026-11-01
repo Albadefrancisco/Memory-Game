@@ -9,22 +9,20 @@
 	</style>
 
 	<script>
-
-		const nMenu = 64; // numero de opciones del menu
-		let primero = null; // primer cuadrado pulsado, null significa que todavía no hay ninguno pulsado
-		let segundo = null; // segundo cuadrado pulsado
+		let first = null; // first box clicked, null means no box has been clicked yet
+		let second = null; // second box clicked
 		let timer;
-		let contador = 0;
-		let jugando = false;
-		let terminado = false;
+		let counter = 0;
+		let playing = false;
+		let finished = false;
 
-		function iniciar() {
-			// tamaño disponible: el menor entre el ancho y el alto de la pantalla
-			let espacio = Math.min(window.innerWidth - 24, window.innerHeight * 0.65);
-			let caja = Math.floor(espacio / 4) - 16; // cada caja ocupa caja + 16px (borde, padding y margen)
-			if (caja > 300) caja = 300; // máximo, para que no sea gigante en pantallas grandes
-			let ancho = (caja + 16) * 4; // ancho del tablero
-			//centramos todo el body
+		function init() {
+			// available size: the smaller of the screen width and height
+			let space = Math.min(window.innerWidth - 24, window.innerHeight * 0.65);
+			let boxSize = Math.floor(space / 4) - 16; // each box takes boxSize + 16px (border, padding and margin)
+			if (boxSize > 300) boxSize = 300; // maximum, so it doesn't get huge on big screens
+			let width = (boxSize + 16) * 4; // board width
+			// center everything in the body
 			document.body.style.backgroundColor = '#fff0f5';
 			document.body.style.margin = '0';
 			document.body.style.minHeight = '100vh';
@@ -33,31 +31,32 @@
 			document.body.style.justifyContent = 'center';
 			document.body.style.alignItems = 'center';
 			document.body.style.fontFamily = 'Arial, sans-serif';
-			document.getElementById('demo').style.fontSize = (caja * 0.25) + 'px';
+			document.getElementById('demo').style.fontSize = (boxSize * 0.25) + 'px';
 			document.getElementById('demo').style.fontWeight = 'bold';
 
-			//Botón
-			let boton = document.querySelector('button');
-			boton.style.width = (ancho * 0.45) + 'px';
-			boton.style.height = (caja * 0.4) + 'px';
-			boton.style.fontSize = (caja * 0.2) + 'px';
-			boton.style.fontWeight = 'bold';
-			boton.style.backgroundColor = 'white';
-			boton.style.border = '3px solid pink';
-			boton.style.borderRadius = '30px';
-			boton.style.color = 'black';
-			boton.style.fontFamily = 'Arial, sans-serif';
+			// Button
+			let button = document.querySelector('button');
+			button.style.width = (width * 0.45) + 'px';
+			button.style.height = (boxSize * 0.4) + 'px';
+			button.style.fontSize = (boxSize * 0.2) + 'px';
+			button.style.fontWeight = 'bold';
+			button.style.backgroundColor = 'white';
+			button.style.border = '3px solid pink';
+			button.style.borderRadius = '30px';
+			button.style.color = 'black';
+			button.style.fontFamily = 'Arial, sans-serif';
+			button.style.cursor = 'pointer';
 
-			//Points
+			// Points
 			let points = document.getElementById('points');
-			points.style.fontSize = (caja * 0.3) + 'px';
+			points.style.fontSize = (boxSize * 0.3) + 'px';
 			points.style.margin = '0px';
 			points.style.fontWeight = 'bold';
-			
-			//Reload Button
+
+			// Reload Button
 			let reload = document.getElementById('reload');
-			reload.style.width = (caja * 0.5) + 'px';
-			reload.style.height = (caja * 0.5) + 'px';
+			reload.style.width = (boxSize * 0.5) + 'px';
+			reload.style.height = (boxSize * 0.5) + 'px';
 			reload.style.backgroundColor = 'pink';
 			reload.style.backgroundImage = 'url(img/reload.png)';
 			reload.style.backgroundSize = '70%';
@@ -65,99 +64,102 @@
 			reload.style.backgroundRepeat = 'no-repeat';
 			reload.style.border = 'none';
 			reload.style.borderRadius = '50%';
+			reload.style.cursor = 'pointer';
 
-			// fila de arriba: reload a la izquierda, puntos a la derecha
-			let filaPuntos = crearNodo('div', '', 'filaPuntos');
-			filaPuntos.style.display = 'flex';
-			filaPuntos.style.justifyContent = 'space-between';
-			filaPuntos.style.alignItems = 'center';
-			filaPuntos.style.width = ancho + 'px';
-			filaPuntos.style.marginBottom = '20px';
-			filaPuntos.appendChild(reload); // left
-			filaPuntos.appendChild(points); // right
+			// top row: reload on the left, points on the right
+			let pointsRow = createNode('div', '', 'pointsRow');
+			pointsRow.style.display = 'flex';
+			pointsRow.style.justifyContent = 'space-between';
+			pointsRow.style.alignItems = 'center';
+			pointsRow.style.width = width + 'px';
+			pointsRow.style.marginBottom = '20px';
+			pointsRow.appendChild(reload); // left
+			pointsRow.appendChild(points); // right
 
-			//Tablero
-			let tablero = crearNodo('div', '', 'tablero');
-			tablero.style.width = ancho + 'px';
-			tablero.style.overflow = 'hidden';
+			// Board
+			let board = createNode('div', '', 'board');
+			board.style.width = width + 'px';
+			board.style.overflow = 'hidden';
 
-			//Barra debajo de Tablerp
-			let barra = crearNodo('div', '', 'barra');
-			barra.style.display = 'flex';
-			barra.style.justifyContent = 'space-between'; // uno a cada lado
-			barra.style.alignItems = 'center';
-			barra.style.width = ancho + 'px';
-			barra.style.marginTop = '30px';
+			// Bar below the board
+			let bar = createNode('div', '', 'bar');
+			bar.style.display = 'flex';
+			bar.style.justifyContent = 'space-between'; // one on each side
+			bar.style.alignItems = 'center';
+			bar.style.width = width + 'px';
+			bar.style.marginTop = '30px';
 
-			// movemos el botón y el contador a la barra
-			barra.appendChild(document.querySelector('button')); // izquierda
+			// we move the button and the countdown into the bar
+			bar.appendChild(document.querySelector('button')); // left
 			let demo = document.getElementById('demo');
 			demo.style.margin = '0px';
-			barra.appendChild(demo); // derecha
+			bar.appendChild(demo); // right
 
 
-			let fotos = ['img/edge2edge-media-6gvHkTmC3Bo-unsplash.jpg',
+			let photos = ['img/edge2edge-media-6gvHkTmC3Bo-unsplash.jpg',
 				'img/katriona-mccarthy-l7B7VjYL7pk-unsplash.jpg',
 				'img/katriona-mccarthy-sGYlyg_U92I-unsplash.jpg',
 				'img/klara-kulikova-glyAISndbac-unsplash.jpg',
 				'img/marianne-krohn-HV3XfirsXp8-unsplash.jpg',
 				'img/mick-de-paola-hiVfcLGGYtE-unsplash.jpg',
 				'img/olga-drach-mCufwx_aycM-unsplash.jpg',
-				'img/pawel-czerwinski-jtes8PJxxj8-unsplash.jpg']; // colores repetidos para las parejas 
+				'img/pawel-czerwinski-jtes8PJxxj8-unsplash.jpg']; // photos used in the game
 
-			for (let i = 0; i < fotos.length; i++) {
+			for (let i = 0; i < photos.length; i++) {
 				let img = new Image();
-				img.src = fotos[i]; // el navegador la descarga ahora y la guarda
+				img.src = photos[i]; // the browser downloads it now and keeps it
 			}
 
-			let imagenes = fotos.concat(fotos); // cada foto dos veces
+			let images = photos.concat(photos); // each photo twice, for the pairs
 
-			imagenes.sort(function () { //mezcla la lista para que las parejas queden en sitios al azar
+			images.sort(function () { // shuffle the list so the pairs end up in random places
 				return Math.random() - 0.5;
 			});
-			let num = 0; //posicion del color que le toca al siguiente cuadrado
+			let num = 0; // position of the image for the next box
 
-			for (let fila = 1; fila < 5; fila++) {
+			for (let row = 1; row < 5; row++) {
 				for (let col = 1; col < 5; col++) {
 
-					var ele = crearNodo('div', '', '(fila,col)'); //crea el div y lo añade al body
-					tablero.appendChild(ele); // lo mueve del body al tablero
+					var box = createNode('div', '', 'box' + row + col); // creates the div and adds it to the body
+					board.appendChild(box); // moves it from the body to the board
 
-					ele.colorOculto = imagenes[num]; // color secreto de este cuadrado
-					num++;//el siguiente cuadrado usará el siguiente color
+					box.hiddenImage = images[num]; // secret image of this box
+					num++; // the next box will use the next image
 
-					ele.style.border = '3px solid pink';
-					ele.style.backgroundColor = 'pink';
-					ele.style.borderRadius = '32%'
-					ele.style.height = caja + 'px';
-					ele.style.width = caja + 'px';
-					ele.style.margin = '3px';
-					ele.style.padding = '2px';
-					ele.style.float = 'left'; // cajas en linea
-					ele.style.backgroundSize = 'cover';
-					ele.style.backgroundPosition = 'center';
-					ele.style.backgroundRepeat = 'no-repeat';
+					box.style.border = '3px solid pink';
+					box.style.backgroundColor = 'pink';
+					box.style.borderRadius = '32%'
+					box.style.height = boxSize + 'px';
+					box.style.width = boxSize + 'px';
+					box.style.margin = '3px';
+					box.style.padding = '2px';
+					box.style.float = 'left'; // boxes in a line
+					box.style.backgroundSize = 'cover';
+					box.style.backgroundPosition = 'center';
+					box.style.backgroundRepeat = 'no-repeat';
+					box.style.cursor = 'pointer';
 
-					if (col == 1) ele.style.clear = 'left'; //salto linea cada
+					if (col == 1) box.style.clear = 'left'; // line break at the start of each row
 
-					ele.addEventListener('click', clickMenu);
+					box.addEventListener('click', clickMenu);
 				}
 			}
 		}
-		function crearNodo(tipo, inner, id) {
-			// crea el nodo, lo pone en el body
-			var ele = document.createElement(tipo);
-			document.body.appendChild(ele); // añadir al body el elemento div por abajo
-			ele.innerHTML = inner; // contenido
-			ele.id = id; // id del nodo
-			return ele; // retorna la referencia
+		function createNode(type, inner, id) {
+			// creates the node and puts it in the body
+			var element = document.createElement(type);
+			document.body.appendChild(element); // add the element to the body, at the bottom
+			element.innerHTML = inner; // content
+			element.id = id; // id of the node
+			return element; // returns the reference
 		}
 		function startCountdown() {
-			if (terminado) {
+			if (finished) {
 				location.reload();
 				return;
 			}
-			jugando = true;
+			if (playing) return; // a game is already running
+			playing = true;
 			clearInterval(timer);
 			let count = 60;
 			myDisplayer(count);
@@ -168,8 +170,8 @@
 
 				if (count === 0) {
 					clearInterval(timer);
-					jugando = false;
-					terminado = true;
+					playing = false;
+					finished = true;
 					myDisplayer("Try again!");
 				}
 			}, 1000);
@@ -182,54 +184,53 @@
 		}
 
 		function clickMenu() {
-			if (!jugando) return;
-			// Ignorar si ya está descubierto (acertado o ya pulsado)
-			if (this.style.backgroundColor != 'pink') return; // si el cuadrado no es rosa no hacemos nada
+			if (!playing) return;
+			// Ignore if it is already uncovered (matched or already clicked)
+			if (this.style.backgroundColor != 'pink') return; // if the box is not pink we do nothing
 
-			// Tercer click: si había dos descubiertos sin acertar, taparlos
-			if (segundo != null) {
-				primero.style.backgroundColor = 'pink';
-				primero.style.backgroundImage = 'none';
-				segundo.style.backgroundColor = 'pink';
-				segundo.style.backgroundImage = 'none';
-				primero = null; //vaciamos para empezar nueva jugada
-				segundo = null;
+			// Third click: if two uncovered boxes didn't match, cover them again
+			if (second != null) {
+				first.style.backgroundColor = 'pink';
+				first.style.backgroundImage = 'none';
+				first.style.cursor = 'pointer';
+				second.style.backgroundColor = 'pink';
+				second.style.backgroundImage = 'none';
+				second.style.cursor = 'pointer';
+				first = null; // we empty them to start a new turn
+				second = null;
+
 			}
 
-			// Descubrir el cuadrado pulsado poniendole su color oculto
+			// Uncover the clicked box by showing its hidden image
 			this.style.backgroundColor = 'white';
-			this.style.backgroundImage = 'url(' + this.colorOculto + ')';
+			this.style.cursor = 'default';
+			this.style.backgroundImage = 'url(' + this.hiddenImage + ')';
 
-			if (primero == null) {
-				primero = this;// es el primero de la jugada, no había nada guardado
+			if (first == null) {
+				first = this; // it is the first of the turn, nothing was saved before
 			} else {
-				segundo = this;// ya había uno, este es el segundo
-				if (primero.colorOculto == segundo.colorOculto) { //se quedan destapados
-					primero = null;
-					segundo = null;
-					contador++;
-					document.getElementById('points').innerHTML = 'Points: ' + contador
+				second = this; // there was already one, this is the second
+				if (first.hiddenImage == second.hiddenImage) { // they stay uncovered
+					first = null;
+					second = null;
+					counter++;
+					document.getElementById('points').innerHTML = 'Points: ' + counter
 				}
 			}
-			if (contador == 8) {
+			if (counter == 8) {
 				clearInterval(timer);
-				jugando = false;
-				terminado = true;
+				playing = false;
+				finished = true;
 				myDisplayer("Congratulations!");
 			}
-
-
-
 		}
-
-
-		window.onload = iniciar; // inicio de js al terminar la carga de la pagina
+		window.onload = init; // start the js when the page has finished loading
 	</script>
 </head>
 
 <body>
 	<button onclick="startCountdown()">Start Countdown</button>
-	<button onclick="location.reload()" id="reload"></button>
+	<button onclick="location.reload()" id="reload" title="reload"></button>
 	<p id="demo"></p>
 	<p id="points">Points: 0</p>
 
