@@ -1,0 +1,210 @@
+
+let first = null; // first box clicked, null means no box has been clicked yet
+let second = null; // second box clicked
+let timer;
+let counter = 0;
+let playing = false;
+let finished = false;
+
+function init() {
+    // available size: the smaller of the screen width and height
+    let space = Math.min(window.innerWidth - 24, window.innerHeight * 0.65);
+    let boxSize = Math.floor(space / 4) - 16; // each box takes boxSize + 16px (border, padding and margin)
+    if (boxSize > 300) boxSize = 300; // maximum, so it doesn't get huge on big screens
+    let width = (boxSize + 16) * 4; // board width
+    // center everything in the body
+    document.body.style.backgroundColor = '#fff0f5';
+    document.body.style.margin = '0';
+    document.body.style.minHeight = '100vh';
+    document.body.style.display = 'flex';
+    document.body.style.flexDirection = 'column';
+    document.body.style.justifyContent = 'center';
+    document.body.style.alignItems = 'center';
+    document.body.style.fontFamily = 'Arial, sans-serif';
+    document.getElementById('demo').style.fontSize = (boxSize * 0.25) + 'px';
+    document.getElementById('demo').style.fontWeight = 'bold';
+
+    // Button
+    let button = document.querySelector('button');
+    button.style.width = (width * 0.45) + 'px';
+    button.style.height = (boxSize * 0.4) + 'px';
+    button.style.fontSize = (boxSize * 0.2) + 'px';
+    button.style.fontWeight = 'bold';
+    button.style.backgroundColor = 'white';
+    button.style.border = '3px solid pink';
+    button.style.borderRadius = '30px';
+    button.style.color = 'black';
+    button.style.fontFamily = 'Arial, sans-serif';
+    button.style.cursor = 'pointer';
+
+    // Points
+    let points = document.getElementById('points');
+    points.style.fontSize = (boxSize * 0.3) + 'px';
+    points.style.margin = '0px';
+    points.style.fontWeight = 'bold';
+
+    // Reload Button
+    let reload = document.getElementById('reload');
+    reload.style.width = (boxSize * 0.5) + 'px';
+    reload.style.height = (boxSize * 0.5) + 'px';
+    reload.style.backgroundColor = 'pink';
+    reload.style.backgroundImage = 'url(img/reload.png)';
+    reload.style.backgroundSize = '70%';
+    reload.style.backgroundPosition = 'center';
+    reload.style.backgroundRepeat = 'no-repeat';
+    reload.style.border = 'none';
+    reload.style.borderRadius = '50%';
+    reload.style.cursor = 'pointer';
+
+    // top row: reload on the left, points on the right
+    let pointsRow = createNode('div', '', 'pointsRow');
+    pointsRow.style.display = 'flex';
+    pointsRow.style.justifyContent = 'space-between';
+    pointsRow.style.alignItems = 'center';
+    pointsRow.style.width = width + 'px';
+    pointsRow.style.marginBottom = '20px';
+    pointsRow.appendChild(reload); // left
+    pointsRow.appendChild(points); // right
+
+    // Board
+    let board = createNode('div', '', 'board');
+    board.style.width = width + 'px';
+    board.style.overflow = 'hidden';
+
+    // Bar below the board
+    let bar = createNode('div', '', 'bar');
+    bar.style.display = 'flex';
+    bar.style.justifyContent = 'space-between'; // one on each side
+    bar.style.alignItems = 'center';
+    bar.style.width = width + 'px';
+    bar.style.marginTop = '30px';
+
+    // we move the button and the countdown into the bar
+    bar.appendChild(document.querySelector('button')); // left
+    let demo = document.getElementById('demo');
+    demo.style.margin = '0px';
+    bar.appendChild(demo); // right
+
+
+    let photos = ['img/i1.jpg', 'img/i2.jpg', 'img/i3.jpg', 'img/i4.jpg', 'img/i5.jpg', 'img/i6.jpg', 'img/i7.jpg', 'img/i8.jpg',]; // photos used in the game
+
+    for (let i = 0; i < photos.length; i++) {
+        let img = new Image();
+        img.src = photos[i]; // the browser downloads it now and keeps it
+    }
+
+    let images = photos.concat(photos); // each photo twice, for the pairs
+
+    images.sort(function () { // shuffle the list so the pairs end up in random places
+        return Math.random() - 0.5;
+    });
+    let num = 0; // position of the image for the next box
+
+    for (let row = 1; row < 5; row++) {
+        for (let col = 1; col < 5; col++) {
+
+            var box = createNode('div', '', 'box' + row + col); // creates the div and adds it to the body
+            board.appendChild(box); // moves it from the body to the board
+
+            box.hiddenImage = images[num]; // secret image of this box
+            num++; // the next box will use the next image
+
+            box.style.border = '3px solid pink';
+            box.style.backgroundColor = 'pink';
+            box.style.borderRadius = '32%'
+            box.style.height = boxSize + 'px';
+            box.style.width = boxSize + 'px';
+            box.style.margin = '3px';
+            box.style.padding = '2px';
+            box.style.float = 'left'; // boxes in a line
+            box.style.backgroundSize = 'cover';
+            box.style.backgroundPosition = 'center';
+            box.style.backgroundRepeat = 'no-repeat';
+            box.style.cursor = 'pointer';
+
+            if (col == 1) box.style.clear = 'left'; // line break at the start of each row
+
+            box.addEventListener('click', clickMenu);
+        }
+    }
+}
+function createNode(type, inner, id) {
+    // creates the node and puts it in the body
+    var element = document.createElement(type);
+    document.body.appendChild(element); // add the element to the body, at the bottom
+    element.innerHTML = inner; // content
+    element.id = id; // id of the node
+    return element; // returns the reference
+}
+function startCountdown() {
+    if (finished) {
+        location.reload();
+        return;
+    }
+    if (playing) return; // a game is already running
+    playing = true;
+    clearInterval(timer);
+    let count = 60;
+    myDisplayer(count);
+
+    timer = setInterval(function () {
+        count--;
+        myDisplayer(count);
+
+        if (count === 0) {
+            clearInterval(timer);
+            playing = false;
+            finished = true;
+            myDisplayer("Try again!");
+        }
+    }, 1000);
+}
+
+// Function to display any text
+function myDisplayer(text) {
+    let demo = document.getElementById("demo");
+    demo.innerHTML = text;
+}
+
+function clickMenu() {
+    if (!playing) return;
+    // Ignore if it is already uncovered (matched or already clicked)
+    if (this.style.backgroundColor != 'pink') return; // if the box is not pink we do nothing
+
+    // Third click: if two uncovered boxes didn't match, cover them again
+    if (second != null) {
+        first.style.backgroundColor = 'pink';
+        first.style.backgroundImage = 'none';
+        first.style.cursor = 'pointer';
+        second.style.backgroundColor = 'pink';
+        second.style.backgroundImage = 'none';
+        second.style.cursor = 'pointer';
+        first = null; // we empty them to start a new turn
+        second = null;
+
+    }
+
+    // Uncover the clicked box by showing its hidden image
+    this.style.backgroundColor = 'white';
+    this.style.cursor = 'default';
+    this.style.backgroundImage = 'url(' + this.hiddenImage + ')';
+
+    if (first == null) {
+        first = this; // it is the first of the turn, nothing was saved before
+    } else {
+        second = this; // there was already one, this is the second
+        if (first.hiddenImage == second.hiddenImage) { // they stay uncovered
+            first = null;
+            second = null;
+            counter++;
+            document.getElementById('points').innerHTML = 'Points: ' + counter
+        }
+    }
+    if (counter == 8) {
+        clearInterval(timer);
+        playing = false;
+        finished = true;
+        myDisplayer("Congratulations!");
+    }
+}
+window.onload = init; // start the js when the page has finished loading
