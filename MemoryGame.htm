@@ -3,7 +3,7 @@
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<title>JUEGO DE MEMORIA</title>
+	<title>MEMORY GAME</title>
 	<style>
 	</style>
 
@@ -14,6 +14,7 @@
 		let segundo = null; // segundo cuadrado pulsado
 		let timer;
 		let contador = 0;
+		let jugando = false;
 
 		function iniciar() {
 			//centramos todo el body
@@ -33,8 +34,9 @@
 			boton.style.height = '100px';
 			boton.style.fontSize = '50px';
 			boton.style.fontWeight = 'bold';
-			boton.style.backgroundColor='white';
-			boton.style.border= '7px solid pink';
+			boton.style.backgroundColor = 'white';
+			boton.style.border = '7px solid pink';
+			boton.style.borderRadius = '30px';
 
 			let puntos = document.getElementById('puntos');
 			puntos.style.width = '1264px';
@@ -63,7 +65,7 @@
 			demo.style.margin = '0px';
 			barra.appendChild(demo); // derecha
 
-		
+
 			let fotos = ['img/edge2edge-media-6gvHkTmC3Bo-unsplash.jpg',
 				'img/katriona-mccarthy-l7B7VjYL7pk-unsplash.jpg',
 				'img/katriona-mccarthy-sGYlyg_U92I-unsplash.jpg',
@@ -115,6 +117,7 @@
 			return ele; // retorna la referencia
 		}
 		function startCountdown() {
+			jugando = true;
 			clearInterval(timer);
 			let count = 60;
 			myDisplayer(count);
@@ -125,6 +128,7 @@
 
 				if (count === 0) {
 					clearInterval(timer);
+					jugando = false;
 					myDisplayer("Try again!");
 				}
 			}, 1000);
@@ -137,6 +141,7 @@
 		}
 
 		function clickMenu() {
+			if (!jugando) return;
 			// Ignorar si ya está descubierto (acertado o ya pulsado)
 			if (this.style.backgroundColor != 'pink') return; // si el cuadrado no es rosa no hacemos nada
 
@@ -162,11 +167,12 @@
 					primero = null;
 					segundo = null;
 					contador++;
-					document.getElementById('puntos').innerHTML = 'Puntos: ' + contador
+					document.getElementById('puntos').innerHTML = 'Points: ' + contador
 				}
 			}
 			if (contador == 8) {
 				clearInterval(timer);
+				jugando = false;
 				myDisplayer("Congratulations!");
 			}
 
