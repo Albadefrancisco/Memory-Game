@@ -52,13 +52,13 @@
 			puntos.style.fontSize = (caja * 0.3) + 'px';
 			puntos.style.marginBottom = '20px';
 			puntos.style.fontWeight = 'bold';
-			puntos.style.textAlign = 'right'; // o 'center' / 'right'
+			puntos.style.textAlign = 'right'; 
 			document.body.appendChild(puntos);
 
 			//Tablero
 			let tablero = crearNodo('div', '', 'tablero');
-			tablero.style.width = ancho + 'px'; // 4 cajas de 110px
-			tablero.style.overflow = 'hidden'; // para que envuelva las cajas con float
+			tablero.style.width = ancho + 'px'; 
+			tablero.style.overflow = 'hidden';
 
 			//Barra debajo de Tablerp
 			let barra = crearNodo('div', '', 'barra');
@@ -83,6 +83,12 @@
 				'img/mick-de-paola-hiVfcLGGYtE-unsplash.jpg',
 				'img/olga-drach-mCufwx_aycM-unsplash.jpg',
 				'img/pawel-czerwinski-jtes8PJxxj8-unsplash.jpg']; // colores repetidos para las parejas 
+				
+				for (let i = 0; i < fotos.length; i++) {
+				let img = new Image();
+				img.src = fotos[i]; // el navegador la descarga ahora y la guarda
+			}
+			
 			let imagenes = fotos.concat(fotos); // cada foto dos veces
 
 			imagenes.sort(function () { //mezcla la lista para que las parejas queden en sitios al azar
