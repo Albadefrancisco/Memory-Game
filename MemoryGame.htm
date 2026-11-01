@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>JUEGO DE MEMORIA</title>
+<style>
+</style>
+<script>
+
+	const nMenu=64; // numero de opciones del menu
+	let primero = null; // primer cuadrado pulsado, null significa que todavía no hay ninguno pulsado
+	let segundo = null; // segundo cuadrado pulsado
+
+	function iniciar(){
+	let colores = ['red','red','blue','blue','green','green','yellow','yellow',
+	               'orange','orange','purple','purple','black','black','white','white']; // colores repetidos para las parejas 
+	
+				   colores.sort(function(){ //mezcla la lista para que las parejas queden en sitios al azar
+		return Math.random() - 0.5; 
+	}); 
+	let num = 0; //posicion del color que le toca al siguiente cuadrado
+
+for (let fila=1; fila<5; fila++){
+	for (let col=1; col<5; col++){
+		
+		var ele=crearNodo('div','','(fila,col)'); //crea el div y lo añade al body
+		
+		ele.colorOculto = colores[num]; // color secreto de este cuadrado
+		num++;//el siguiente cuadrado usará el siguiente color
+
+		ele.style.border='1px solid black';
+		ele.style.backgroundColor='pink';
+		ele.style.height='100px';
+		ele.style.width='100px';
+		ele.style.margin='3px';
+		ele.style.padding='2px';
+		ele.style.textAlign='left'; // centrar texto
+		ele.style.float='left'; // cajas en linea
+
+		if (col == 1) ele.style.clear='left'; //salto linea cada
+
+		ele.addEventListener('click',clickMenu);
+	}
+}
+
+}
+
+function clickMenu(){
+	// Ignorar si ya está descubierto (acertado o ya pulsado)
+	if (this.style.backgroundColor != 'pink') return; // si el cuadrado no es rosa no hacemos nada
+
+	// Tercer click: si había dos descubiertos sin acertar, taparlos
+	if (segundo != null){
+		primero.style.backgroundColor = 'pink';
+		segundo.style.backgroundColor = 'pink';
+		primero = null; //vaciamos para empezar nueva jugada
+		segundo = null;
+	}
+
+	// Descubrir el cuadrado pulsado poniendole su color oculto
+	this.style.backgroundColor = this.colorOculto;
+
+	if (primero == null){
+		primero = this;// es el primero de la jugada, no había nada guardado
+	} else {
+		segundo = this;// ya había uno, este es el segundo
+		if (primero.colorOculto == segundo.colorOculto){ //se quedan destapados
+			primero = null;
+			segundo = null;
+		}
+	}
+}
+	
+function crearNodo(tipo,inner,id){
+	// crea el nodo, lo pone en el body
+	var ele=document.createElement(tipo);
+	document.body.appendChild(ele); // añadir al body el elemento div por abajo
+	ele.innerHTML=inner; // contenido
+	ele.id=id; // id del nodo
+	return ele; // retorna la referencia
+}
+
+window.onload=iniciar; // inicio de js al terminar la carga de la pagina
+</script>
+</head>
+<body>
+</body>
+</html>
